@@ -1,0 +1,11 @@
+language: node_js
+node_js: node
+services:
+- mongodb
+deploy:
+  provider: heroku
+  api_key:
+    secure: B870lARdPZ04rUXYrIUBjcpHOcwPjOVeXyId8kx76mN1tiqWhLFS17VJDQxkbZCRlKJCcCjh/QiU8XP2NZoh0qdvvp2HWtzhcMZrd9DIFV9z9LJZba9YJrEiYhkkmh/rQGXX2ZllA7IJT+ZfHxC02WxtWNPBgbf7JKa5cJ6ErhmKtA5K180nvZEkXYouEj6gnH6iTG4/PsTVYyPbTgLGpY49UYX2PxItHncDDdPJ9bA1naTcnF9L8pDm0HR/sE/z23SFqs4qHeT05QmK5Y8V0yDTKPax3ryvgOGXKycy6k2TvPYgbxSM9XgiDDnW7C8CgH5I2tiBvLdsGVilC6IFO/XStw7IdNB43PFjfJwkBjRVqNNUO2Fh8BaPNPTyrc7B2Lni2zONlm+MYUAzMXLm5mVBIYPalKhBgocRFw202Y24kXnI8BMooiVtbnfuyHaaOh0ag/iP5/oQPA+oS00cTD5u+nHW+ZYCGGIx2Fut6GzHKFuR4Gek1XT1xqhZnY+Mq9wkJHhjSuTMCX+3hfUSgdpL4SDR24J89nCjcxrXTwmiNjh3/E9msHuhFPy/fEQV+OGiaj4aTHKBhwEZe0rZZYZf5CHaljoyQjw07NR47EWwnDEuyNfHSDL6+OmxoTSNlU+MgPElslXAOklrXcz2GyezfE6jOC3+rgDvQpN4VF0=
+  app: stark-lake-77252
+  on:
+    repo: rk-codes/favoreats-api

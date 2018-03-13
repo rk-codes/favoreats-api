@@ -26,7 +26,7 @@ const RestaurantSchema = mongoose.Schema({
 RestaurantSchema.methods.serialize = function() {
     return{
         id: this._id || '',
-        ame: this.name || '',
+        name: this.name || '',
         location: this.location || '',
         cuisine: this.cuisine || '',
         dishes: this.dishes.map(dish => dish) || []

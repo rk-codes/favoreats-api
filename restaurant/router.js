@@ -3,6 +3,9 @@ const config = require('../config');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 
+const {Restaurant} = require('./models');
+const {User} = require('../user//models');
+
 const jsonParser = bodyParser.json();
 const router = express.Router();
 
@@ -10,15 +13,12 @@ const router = express.Router();
 //Mock data
 const user = {
     restaurants: [{
-        id: 1,
         name: 'ABC',
         location: 'SFO',
         cuisine: 'Italian',
         dishes: [{
-            id: 1,
             name: 'Dish d',
             reviews: [{
-                id: 1,
                 date: '2/4/2017',
                 rating: '2',
                 description: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.'
@@ -26,15 +26,12 @@ const user = {
         }]
     },
     {
-        id: 2,
         name: 'XXY',
         location: 'PHX',
         cuisine: 'Mexican',
         dishes: [{
-            id: 2,
             name: 'Dish a',
             reviews: [{
-                id: 2,
                 date: '2/6/2017',
                 rating: '5',
                 description: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.'
@@ -54,8 +51,28 @@ router.get('/:id', (req, res) => {
 })
 
 //Add new restaurant
-router.post('/', (req, res) => {
-    res.json({restaurant: true})
+router.post('/', jsonParser, (req, res) => {
+    console.log("POST a restuarant");
+   
+    let userId = "5aa712f7a6fae94bdf8163fe";
+    Restaurant.create({
+        name: req.body.name,
+        location: req.body.location,
+        cuisine: req.body.cuisine
+    })
+    .then(restaurant => 
+        User.findByIdAndUpdate(userId, {
+            $push: {"restaurants": restaurant}
+        })      
+    )
+    .then(
+        user => 
+            res.status(201).json(user.serialize())
+        )
+    .catch(err => {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    })
 })
 
 //Delete a restaurant
@@ -64,8 +81,10 @@ router.delete('/:id', (req, res) => {
 })
 
 //Update a restaurant
-router.put('/:id', (req, res) => {
+router.put('/:id', jsonParser, (req, res) => {
     res.json({restaurant: true})
 })
 
 module.exports = {router};
+       
+

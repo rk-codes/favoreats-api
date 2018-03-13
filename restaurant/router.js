@@ -61,9 +61,9 @@ router.post('/', jsonParser, jwtAuth, (req, res) => {
     .then(restaurant => 
         User.findByIdAndUpdate(req.user.id, {
             $push: {"restaurants": restaurant},        
-        }, {'new': true})      
+        }, {'new': true}).populate({path: 'restaurants'})      
     )
-    .then(user => res.status(201).json(user.serialize()))
+    .then(user => res.status(201).json(user.restaurants.map(restaurant => restaurant.serialize())))
     .catch(err => {
         console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });

@@ -47,7 +47,12 @@ router.get('/', (req, res) => {
 
 //GET a restaurant by id
 router.get('/:id', (req, res) => {
-    res.json({restaurant: true})
+    Restaurant.findById(req.params.id)
+    .then(restaurant => res.status(200).json(restaurant))
+    .catch(err => {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    })
 })
 
 //Add new restaurant

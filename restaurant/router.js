@@ -77,7 +77,8 @@ router.delete('/:id', jwtAuth, (req, res) => {
     .then(restaurant => 
         User.findByIdAndUpdate({_id: restaurant.user}, {$pull: {restaurants: req.params.id}})
     )
-    .then(user => res.json(user.serialize()))
+    .then(user => User.findById(req.user.id))
+    .then(userdata => res.json(userdata.serialize()))
     .catch(err => {
         console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });

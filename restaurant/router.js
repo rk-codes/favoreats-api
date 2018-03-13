@@ -42,6 +42,16 @@ router.get('/:id', (req, res) => {
 //Add new restaurant
 router.post('/', jsonParser, jwtAuth, (req, res) => {
     console.log("POST a restuarant");
+    
+    const requiredFields = ['name', 'location', 'cuisine'];
+    for (let i = 0; i < requiredFields.length; i++) {
+        const field = requiredFields[i];
+        if (!(field in req.body)) {
+            const message = `Missing \`${field}\` in request body`;
+            console.error(message);
+            return res.status(400).send(message);
+        }
+      }
     Restaurant.create({
         user: req.user.id,
         name: req.body.name,
@@ -53,10 +63,8 @@ router.post('/', jsonParser, jwtAuth, (req, res) => {
             $push: {"restaurants": restaurant}
         })      
     )
-    .then(
-        user => 
-            res.status(201).json(user.serialize())
-        )
+    .then(user => User.findById(req.user.id))
+    .then(userdata => res.status(201).json(userdata.serialize()))
     .catch(err => {
         console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -65,12 +73,20 @@ router.post('/', jsonParser, jwtAuth, (req, res) => {
 
 //Delete a restaurant
 router.delete('/:id', jwtAuth, (req, res) => {
-    res.json({restaurant: true})
+    Restaurant.findByIdAndRemove(req.params.id)
+    .then(restaurant => 
+        User.findByIdAndUpdate({_id: restaurant.user}, {$pull: {restaurants: req.params.id}})
+    )
+    .then(user => res.json(user.serialize()))
+    .catch(err => {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    })
 })
 
 //Update a restaurant
 router.put('/:id', jsonParser, jwtAuth, (req, res) => {
-    res.json({restaurant: true})
+   
 })
 
 module.exports = {router};

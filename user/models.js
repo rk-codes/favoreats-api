@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const UserSchema = mongoose.Schema({
     username: {
@@ -25,7 +26,7 @@ const UserSchema = mongoose.Schema({
 });
 
 UserSchema.methods.serialize = function() {
-    console.log(this.restaurants);
+    console.log(this.username);
     return {
       id: this._id,
       username: this.username || '',
@@ -40,6 +41,7 @@ UserSchema.methods.serialize = function() {
   };
   
   UserSchema.statics.hashPassword = function(password) {
+      console.log("hash password");
     return bcrypt.hash(password, 10);
   };
 

@@ -25,6 +25,7 @@ const UserSchema = mongoose.Schema({
 });
 
 UserSchema.methods.serialize = function() {
+    console.log(this.restaurants);
     return {
       id: this._id,
       username: this.username || '',
@@ -32,6 +33,14 @@ UserSchema.methods.serialize = function() {
       lastName: this.lastName || '',
       restaurants: this.restaurants.map(restaurant => restaurant) || []
     };
+  };
+
+  UserSchema.methods.validatePassword = function(password) {
+    return bcrypt.compare(password, this.password);
+  };
+  
+  UserSchema.statics.hashPassword = function(password) {
+    return bcrypt.hash(password, 10);
   };
 
 const User = mongoose.model('User', UserSchema);

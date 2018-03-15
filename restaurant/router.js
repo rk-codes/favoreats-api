@@ -74,13 +74,15 @@ router.post('/', jsonParser, jwtAuth, (req, res) => {
 
 //Delete a restaurant
 router.delete('/:id', jwtAuth, (req, res) => {
+    let deletedRestaurant;
     Restaurant.findByIdAndRemove(req.params.id)
-    .then(restaurant => 
-        User.findByIdAndUpdate({_id: restaurant.user}, {
+    .then(restaurant => {
+        deletedRestaurant = restaurant;
+        return User.findByIdAndUpdate({_id: restaurant.user}, {
             $pull: {restaurants: req.params.id}
-        }, {'new': true}).populate({path: 'restaurants'}) 
-    )
-    .then(user =>res.json(user.restaurants.map(restaurant => restaurant.serialize())))
+        }).populate({path: 'restaurants'}) 
+    })
+    .then(user =>res.json(deletedRestaurant.serialize()))
     .catch(err => {
         console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });

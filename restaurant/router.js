@@ -106,10 +106,9 @@ router.put('/:id', jsonParser, jwtAuth, (req, res) => {
         toUpdate[field] = req.body[field];
         }
     });
-    console.log(toUpdate);
-    Restaurant.findByIdAndUpdate(req.params.id, {'new': true}, {$set: toUpdate})
-   // .then(restaurant => Restaurant.findById(req.params.id))
-    .then(restaurant => res.status(200).json(restaurant))
+    Restaurant.findByIdAndUpdate(req.params.id, {$set: toUpdate})
+    .then(restaurant => Restaurant.findById(req.params.id))
+    .then(restaurant => res.status(200).json(restaurant.serialize()))
     .catch(err => {
         console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });

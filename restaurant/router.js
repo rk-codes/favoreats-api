@@ -52,18 +52,20 @@ router.post('/', jsonParser, jwtAuth, (req, res) => {
             return res.status(400).send(message);
         }
       }
+    let addedRestuarant; 
     Restaurant.create({
         user: req.user.id,
         name: req.body.name,
         location: req.body.location,
         cuisine: req.body.cuisine
     })
-    .then(restaurant => 
-        User.findByIdAndUpdate(req.user.id, {
+    .then(restaurant => {
+        addedRestuarant = restaurant;
+       return User.findByIdAndUpdate(req.user.id, {
             $push: {"restaurants": restaurant},        
-        }, {'new': true}).populate({path: 'restaurants'})      
-    )
-    .then(user => res.status(201).json(user.restaurants.map(restaurant => restaurant.serialize())))
+        }).populate({path: 'restaurants'})      
+    })
+    .then(user => res.status(201).json(addedRestuarant.serialize()))
     .catch(err => {
         console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });

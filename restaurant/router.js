@@ -154,35 +154,58 @@ router.post('/:id/dishes', jwtAuth, jsonParser, (req, res) => {
             console.error(message);
             return res.status(400).send(message);
         }
-      }
-      let addedDish;
-      const newReview = {
+    }
+    let addedDish;
+    const newReview = {
         rating: req.body.rating,
         description: req.body.description 
-      }
-      if(req.body.date) {
+    }
+    if(req.body.date) {
         newReview.date = req.body.date;
-      }
-      const newDish = {
-          name: req.body.name
-      }
-      Review.create(newReview)
+    }
+    const newDish = {
+        name: req.body.name
+    }
+    Review.create(newReview)
       .then(review => Dish.create({
-          restaurant: mongoose.Types.ObjectId(req.params.id),
-          name: req.body.name,
-          reviews: [review._id]
-      }))
-      .then(dish => {
-          addedDish = dish
-          Restaurant.findByIdAndUpdate(req.params.id,{ $push: {"dishes": dish} },{safe: true, upsert: true})
-      })
-      .then(restaurant => res.json(addedDish.serialize()))
-  
-        .catch(err => {
-          console.error(err);
-          res.status(500).json({ error: 'Internal Server Error' });
-        })
+        restaurant: mongoose.Types.ObjectId(req.params.id),
+        name: req.body.name,
+        reviews: [review._id]
+    }))
+    .then(dish => {
+        addedDish = dish
+        Restaurant.findByIdAndUpdate(req.params.id,{ $push: {"dishes": dish} },{safe: true, upsert: true})
     })
+    .then(restaurant => res.json(addedDish.serialize()))
+    .catch(err => {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    })
+})
+
+//DELETE a dish in a restaurant
+router.delete('/:id/dishes/:dishId', jwtAuth, jsonParser, (req, res) => {
+    let deletedDish;
+    Dish.findByIdAndRemove(req.params.dishId)
+    .then(dish => {
+      if(dish) {
+        console.log(dish);
+        deletedDish = dish;
+        Restaurant.findByIdAndUpdate({_id: req.params.id},{ $pull: {dishes: req.params.dishId} })
+        .then(restaurant => res.status(200).json(deletedDish.serialize()))
+         
+      } else {
+         return res.send("No dish found");
+      }      
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    })
+  })
+  
+//Update a dish in a restaurant
+
 
 module.exports = {router};
        

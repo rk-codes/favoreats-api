@@ -9,17 +9,17 @@ const DishSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    reviews : { 
-        type : Array , 
-        "default" : [] 
-    }
+    reviews : [{ 
+        type: mongoose.Schema.Types.ObjectId , 
+        ref: "Review"
+    }]
 })
 
 DishSchema.methods.serialize = function() {
     return{
         id: this._id || '',
         name: this.name || '',
-        reviews: this.dishes.map(review => review) || []
+        reviews: this.reviews.map(review => review) || []
     }
 }
 const Dish = mongoose.model('Dish', DishSchema);

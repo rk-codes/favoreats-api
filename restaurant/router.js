@@ -161,10 +161,7 @@ router.post('/:id/dishes', jwtAuth, jsonParser, (req, res) => {
         description: req.body.description 
     }
     if(req.body.date) {
-        newReview.date = req.body.date;
-    }
-    const newDish = {
-        name: req.body.name
+        newReview.reviewDate = req.body.date;
     }
     Review.create(newReview)
       .then(review => Dish.create({
@@ -173,8 +170,8 @@ router.post('/:id/dishes', jwtAuth, jsonParser, (req, res) => {
         reviews: [review._id]
     }))
     .then(dish => {
-        addedDish = dish
-        Restaurant.findByIdAndUpdate(req.params.id,{ $push: {"dishes": dish} },{safe: true, upsert: true})
+        addedDish = dish;
+        Restaurant.findByIdAndUpdate(req.params.id,{ $push: {"dishes": dish} })
     })
     .then(restaurant => res.json(addedDish.serialize()))
     .catch(err => {
@@ -184,18 +181,40 @@ router.post('/:id/dishes', jwtAuth, jsonParser, (req, res) => {
 })
 
 //DELETE a dish in a restaurant
+// router.delete('/:id/dishes/:dishId', jwtAuth, jsonParser, (req, res) => {
+//     let deletedDish;
+//     Dish.findByIdAndRemove(req.params.dishId)
+//     .then(dish => {
+//       if(dish) {
+//         console.log(dish);
+//         deletedDish = dish;
+//         Restaurant.findByIdAndUpdate({_id: req.params.id},{ $pull: {dishes: req.params.dishId} })
+//         .then(restaurant => res.status(200).json(deletedDish.serialize()))
+         
+//       } else {
+//          return res.send("No dish found");
+//       }      
+//     })
+//     .catch(err => {
+//       console.error(err);
+//       res.status(500).json({ error: 'Internal Server Error' });
+//     })
+//   })
+
 router.delete('/:id/dishes/:dishId', jwtAuth, jsonParser, (req, res) => {
     let deletedDish;
-    Dish.findByIdAndRemove(req.params.dishId)
+    Dish.findByIdAndRemove(req.params.dishId) //remove the dish
     .then(dish => {
       if(dish) {
         console.log(dish);
         deletedDish = dish;
-        Restaurant.findByIdAndUpdate({_id: req.params.id},{ $pull: {dishes: req.params.dishId} })
+        let reviewIds = dish.reviews;
+        Review.remove({ "_id": { "$in": reviewIds } }) //remove the reviews of the deleted dish
+        .then(() => Restaurant.findByIdAndUpdate({_id: req.params.id},{ $pull: {dishes: req.params.dishId} }))
         .then(restaurant => res.status(200).json(deletedDish.serialize()))
          
       } else {
-         return res.send("No dish found");
+        return res.send("No dish found");
       }      
     })
     .catch(err => {
@@ -203,10 +222,34 @@ router.delete('/:id/dishes/:dishId', jwtAuth, jsonParser, (req, res) => {
       res.status(500).json({ error: 'Internal Server Error' });
     })
   })
-  
-//Update a dish in a restaurant
 
+//Update a dish in a restaurant
+router.put('/:id/dishes/:dishId', jwtAuth, jsonParser, (req, res) => {
+   // ensure that the id in the request path and the one in request body match
+  if (!(req.params.dishId && req.body.id && req.params.dishId === req.body.id)) {
+    const message = (
+      `Request path id (${req.params.id}) and request body id ` +
+      `(${req.body.id}) must match`);
+    console.error(message);
+    return res.status(400).json({ message: message });
+  }
+
+  const toUpdate = {};
+  const updateableFields = ['name', 'rating','description'];
+
+  updateableFields.forEach(field => {
+    if (field in req.body) {
+      toUpdate[field] = req.body[field];
+    }
+  });
+
+  Dish.findByIdAndUpdate(req.params.dishId, { $set: toUpdate }) // all key/value pairs in toUpdate will be updated -- that's what `$set` does
+  .then(dish => res.status(204).end())
+  .catch(err => res.status(500).json({ message: 'Internal server error' }));
+})
 
 module.exports = {router};
        
 
+//dish.reviews -> gets an array of ids 
+// Reviews.findByIdAndRemove()

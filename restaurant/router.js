@@ -235,21 +235,15 @@ router.put('/:id/dishes/:dishId', jwtAuth, jsonParser, (req, res) => {
   }
 
   const toUpdate = {};
-  const updateableFields = ['name', 'rating','description'];
-
-  updateableFields.forEach(field => {
-    if (field in req.body) {
-      toUpdate[field] = req.body[field];
-    }
-  });
+  const updateableField = 'name';
+  if (updateableField in req.body) {
+    toUpdate[updateableField] = req.body[updateableField];
+  }
 
   Dish.findByIdAndUpdate(req.params.dishId, { $set: toUpdate }) // all key/value pairs in toUpdate will be updated -- that's what `$set` does
-  .then(dish => res.status(204).end())
+  .then(dish => res.status(200).json(dish.serialize()))
   .catch(err => res.status(500).json({ message: 'Internal server error' }));
 })
 
 module.exports = {router};
        
-
-//dish.reviews -> gets an array of ids 
-// Reviews.findByIdAndRemove()

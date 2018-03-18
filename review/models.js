@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const ReviewSchema = mongoose.Schema({
-    date: {
+    reviewDate: {
         type: Date
     },
     rating: {
@@ -17,7 +17,7 @@ const ReviewSchema = mongoose.Schema({
 ReviewSchema.methods.serialize = function() {
     return{
         id: this._id || '',
-        date: this.date || '',
+        reviewDate: this.reviewDate || '',
         rating: this.name || '',
         description: this.description || ''
     }

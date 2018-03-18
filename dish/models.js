@@ -17,6 +17,7 @@ const DishSchema = mongoose.Schema({
 
 DishSchema.methods.serialize = function() {
     return{
+        restaurant: this.restaurant|| '',
         id: this._id || '',
         name: this.name || '',
         reviews: this.reviews.map(review => review) || []

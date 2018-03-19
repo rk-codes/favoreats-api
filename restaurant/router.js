@@ -272,11 +272,21 @@ router.post('/:id/dishes/:dishId/reviews', jwtAuth, jsonParser, (req, res) => {
     .then(review => {
         addedReview = review;
         console.log(addedReview)
-        Dish.findByIdAndUpdate(req.params.dishId, { $push: {"reviews": review} })
+        return Dish.findByIdAndUpdate(req.params.dishId, { $push: {"reviews": review} })
     })    
     .then(dish => res.json(addedReview.serialize()))
     .catch(err => {
         console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });
     })
+})
+
+//Get all reviews of a dish
+router.get('/:id/dishes/:dishId/reviews', jwtAuth, (req, res) => {
+    Dish.findById(req.params.dishId).populate({path: 'reviews'})
+    .then(dish => res.status(200).json(dish.reviews))
+    .catch(err => {
+        console.error(err);
+        res.status(500).json({error: 'Internal Server Error'});
+  });
 })

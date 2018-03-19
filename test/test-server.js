@@ -22,6 +22,7 @@ let newTestUser = {
 }
 let authToken;
 let userId;
+let restId;
 
 
 function tearDownDb() {
@@ -30,6 +31,7 @@ function tearDownDb() {
 }
 
 function seedRestaurantData(userId) {
+  console.log(userId);
   return Restaurant.create(generateRestaurantData(userId))
   	.then(function(restaurant) {
   		restId = restaurant._id;
@@ -71,7 +73,7 @@ describe('API', function() {
       .post('/user/')
       .send(newTestUser)
       .then(function (res) {
-        userId = res._id;
+        userId = res.id;
         console.log(userId)
         res.should.have.status(201);
       })
@@ -112,7 +114,7 @@ describe('API', function() {
 			.then(function(res) {
 				res.should.have.status(200);
 				res.should.be.json;
-        res.body.should.have.length.of.at.least(1);
+        //res.body.should.have.length.of.at.least(1);
         res.body.forEach(function(restaurant) {
 					restaurant.should.be.a('object');
 					restaurant.should.include.keys('name', 'location', 'cuisine');
@@ -122,5 +124,37 @@ describe('API', function() {
         console.log(err)
       })
     })
+    it('should return one restaurant on GET by id', function() {
+			
+			return Restaurant.findOne()
+			.then(function(restaurant) {
+				restId = restaurant.id;
+				return chai.request(app)
+				.get(`/restaurants/${restaurant.id}`)
+				.set('authorization', `Bearer ${authToken}`)
+			})
+			.then(function(res) {
+				res.should.have.status(200);
+				res.should.be.json;
+				res.body.should.be.a('object');
+				res.body._id.should.equal(restId);
+			})
+    })
+    
+    it('should delete one restaurant by id', function() {
+			return Restaurant.findOne()
+			.then(function(restaurant) {
+				return chai.request(app)
+				.delete(`/restaurants/${restaurant.id}`)
+				.set('authorization', `Bearer ${authToken}`)
+			})
+			.then(function(res) {
+				res.should.have.status(200);
+				return Restaurant.findById(restId)
+			})
+			.then(function(_restaurant){
+				should.not.exist(_restaurant);
+			});
+		});
   });
 })

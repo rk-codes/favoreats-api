@@ -2,6 +2,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+const faker = require('faker');
 
 const should = chai.should();
 chai.use(chaiHttp);
@@ -22,25 +23,49 @@ let newTestUser = {
 let authToken;
 let userId;
 
+
 function tearDownDb() {
   console.warn('Deleting database');
   return mongoose.connection.dropDatabase();
 }
 
-describe('User', function() {
-  before(function() {
-    return runServer(TEST_DATABASE_URL);
-  });
+function seedRestaurantData(userId) {
+  return Restaurant.create(generateRestaurantData(userId))
+  	.then(function(restaurant) {
+  		restId = restaurant._id;
+  		console.log("seedRestaurantData");
+  		console.log(restId);
+  		User.findByIdAndUpdate(userId, 
+  			{ $push: {"restaurants": restaurant} },
+			  { safe: true, upsert: true},
+       		function(err, model) {
+         		if(err){
+        			console.error(err);
+        			return ;
+        		 }
+        	return ;
+		})
+  	})
+}
 
-  after(function() {
-   return closeServer();
-  });
+function generateRestaurantData(userId) {
+	return {
+		user: [mongoose.Types.ObjectId(userId)],
+		name: faker.lorem.sentence(),
+		location: faker.address.city(),
+    cuisine: faker.lorem.word()
+	}
+}
+describe('API', function() {
+  before(function () {
+    return runServer(TEST_DATABASE_URL)
+  })
+ 
+  after(function () {
+    return closeServer()
+  })
 
-  // afterEach(function() {
-  //   return tearDownDb();
-  // });
 
-  describe('POST user', function() {
     it('should register new user', function() {
       return chai.request(app)
       .post('/user/')
@@ -54,11 +79,9 @@ describe('User', function() {
         console.log(err)
       });
     });
-  })
-  
-  describe('POST login', function() {
-    it('should login registered user', function() {
-		
+ 
+ 
+    it('should login registered user', function() {	
       return chai.request(app)
       .post('/auth/login')
       .send(newTestUser)
@@ -70,6 +93,34 @@ describe('User', function() {
       .catch((err) => {
         console.log(err)
       });
-    })
+    
   })
-});
+
+  describe('Restaurants API', function() {
+    beforeEach(function() {
+      return seedRestaurantData(userId);
+    });
+ 
+    afterEach(function() {
+      return tearDownDb();
+    });
+    it('should return all restaurants on GET', function() {
+
+      return chai.request(app)
+			.get('/restaurants')
+			.set('authorization', `Bearer ${authToken}`)
+			.then(function(res) {
+				res.should.have.status(200);
+				res.should.be.json;
+        res.body.should.have.length.of.at.least(1);
+        res.body.forEach(function(restaurant) {
+					restaurant.should.be.a('object');
+					restaurant.should.include.keys('name', 'location', 'cuisine');
+				});
+			})
+			.catch((err) => {
+        console.log(err)
+      })
+    })
+  });
+})

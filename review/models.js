@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 
 const ReviewSchema = mongoose.Schema({
     reviewDate: {
-        type: Date
+        type: Date,
+        default: Date.now
     },
     rating: {
         type: String,
@@ -18,7 +19,7 @@ ReviewSchema.methods.serialize = function() {
     return{
         id: this._id || '',
         reviewDate: this.reviewDate || '',
-        rating: this.name || '',
+        rating: this.rating || '',
         description: this.description || ''
     }
 }

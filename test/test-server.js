@@ -172,6 +172,31 @@ describe('API', function() {
 				res.body.cuisine.should.equal(newRestaurant.cuisine);
 				res.body.location.should.equal(newRestaurant.location);
 			});
+    });
+    
+    it('should update a restaurant', function() {
+			const updateData = {
+				name: "Restaurant One",
+        location: "SFO",
+        cuisine: "Italian"
+			}
+			return Restaurant.findOne()
+			.then(function(restaurant) {
+				updateData.id = restaurant.id;
+				return chai.request(app)
+				.put(`/restaurants/${restaurant.id}`)
+				.set('authorization', `Bearer ${authToken}`)
+				.send(updateData)
+			})
+			.then(function(res) {
+				res.should.have.status(200);
+				return Restaurant.findById(updateData.id)
+			})
+			.then(function(restaurant) {
+				restaurant.name.should.equal(updateData.name);
+        restaurant.cuisine.should.equal(updateData.cuisine);
+        restaurant.location.should.equal(updateData.location);
+			});
 		});
   });
 })

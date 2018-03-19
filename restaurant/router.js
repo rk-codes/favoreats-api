@@ -65,7 +65,7 @@ router.post('/', jsonParser, jwtAuth, (req, res) => {
         addedRestuarant = restaurant;
        return User.findByIdAndUpdate(req.user.id, {
             $push: {"restaurants": restaurant},        
-        }).populate({path: 'restaurants'})      
+        })      
     })
     .then(user => res.status(201).json(addedRestuarant.serialize()))
     .catch(err => {
@@ -171,7 +171,8 @@ router.post('/:id/dishes', jwtAuth, jsonParser, (req, res) => {
     }))
     .then(dish => {
         addedDish = dish;
-        Restaurant.findByIdAndUpdate(req.params.id,{ $push: {"dishes": dish} })
+        return Restaurant.findByIdAndUpdate(req.params.id,{ 
+            $push: {"dishes": dish} })
     })
     .then(restaurant => res.json(addedDish.serialize()))
     .catch(err => {
@@ -179,6 +180,7 @@ router.post('/:id/dishes', jwtAuth, jsonParser, (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     })
 })
+
 
 //DELETE a dish in a restaurant
 // router.delete('/:id/dishes/:dishId', jwtAuth, jsonParser, (req, res) => {
@@ -247,3 +249,34 @@ router.put('/:id/dishes/:dishId', jwtAuth, jsonParser, (req, res) => {
 
 module.exports = {router};
        
+//Add a review for a dish
+router.post('/:id/dishes/:dishId/reviews', jwtAuth, jsonParser, (req, res) => {
+    const requiredFields = ['rating', 'description'];
+    for (let i = 0; i < requiredFields.length; i++) {
+        const field = requiredFields[i];
+        if (!(field in req.body)) {
+            const message = `Missing \`${field}\` in request body`;
+            console.error(message);
+            return res.status(400).send(message);
+        }
+    }
+    let addedReview;
+    const newReview = {
+        rating: req.body.rating,
+        description: req.body.description 
+    }
+    if(req.body.date) {
+        newReview.reviewDate = req.body.date;
+    }
+    Review.create(newReview)
+    .then(review => {
+        addedReview = review;
+        console.log(addedReview)
+        Dish.findByIdAndUpdate(req.params.dishId, { $push: {"reviews": review} })
+    })    
+    .then(dish => res.json(addedReview.serialize()))
+    .catch(err => {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    })
+})

@@ -106,8 +106,8 @@ describe('API', function() {
     afterEach(function() {
       return tearDownDb();
     });
-    it('should return all restaurants on GET', function() {
 
+    it('should return all restaurants on GET', function() {
       return chai.request(app)
 			.get('/restaurants')
 			.set('authorization', `Bearer ${authToken}`)
@@ -124,8 +124,8 @@ describe('API', function() {
         console.log(err)
       })
     })
-    it('should return one restaurant on GET by id', function() {
-			
+
+    it('should return one restaurant on GET by id', function() {	
 			return Restaurant.findOne()
 			.then(function(restaurant) {
 				restId = restaurant.id;
@@ -154,6 +154,23 @@ describe('API', function() {
 			})
 			.then(function(_restaurant){
 				should.not.exist(_restaurant);
+			});
+    });
+    
+    it('should post a new restaurant', function() {
+			let newRestaurant = generateRestaurantData(userId);
+			return chai.request(app)
+			.post('/restaurants/')
+			.set('authorization', `Bearer ${authToken}`)
+			.send(newRestaurant)
+			.then(function(res) {
+				res.should.have.status(201);
+				res.should.be.json;
+				res.body.should.be.a('object');
+				res.body.should.include.keys('name', 'cuisine', 'location');
+				res.body.name.should.equal(newRestaurant.name);
+				res.body.cuisine.should.equal(newRestaurant.cuisine);
+				res.body.location.should.equal(newRestaurant.location);
 			});
 		});
   });

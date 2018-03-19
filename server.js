@@ -38,6 +38,10 @@ app.get('/api/protected', jwtAuth, (req, res) => {
   });
 });
 
+app.get('/api/*', (req, res) => {
+  res.json({ok: true});
+}); 
+
 app.use('*', (req, res) => {
   return res.status(404).json({ message: 'Not Found' });
 });
@@ -45,15 +49,16 @@ app.use('*', (req, res) => {
 //app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
 let server;
 
-function runServer() {
+// connect to mongo database & start the  server
+function runServer(databaseUrl = DATABASE_URL, port = PORT) {
   return new Promise((resolve, reject) => {
-    mongoose.connect(DATABASE_URL, { useMongoClient: true }, err => {
+    mongoose.connect(databaseUrl, { useMongoClient: true }, err => {
       if (err) {
         return reject(err);
       }
       server = app
-        .listen(PORT, () => {
-          console.log(`Your app is listening on port ${PORT}`);
+        .listen(port, () => {
+          console.log(`Your app is listening on port ${port}`);
           resolve();
         })
         .on('error', err => {
@@ -63,6 +68,7 @@ function runServer() {
     });
   });
 }
+//close the server
 function closeServer() {
     return mongoose.disconnect().then(() => {
       return new Promise((resolve, reject) => {

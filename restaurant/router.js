@@ -120,7 +120,7 @@ router.put('/:id', jsonParser, jwtAuth, (req, res) => {
 //GET all dishes of a restaurant
 router.get('/:id/dishes', jwtAuth, (req, res) => {
     Restaurant.findById(req.params.id).populate({path: 'dishes'})
-    .then(restaurant => res.status(200).json(restaurant.dishes))
+    .then(restaurant => res.status(200).json(restaurant.dishes.map(dish => dish.serialize())))
     .catch(err => {
         console.error(err);
         res.status(500).json({error: 'Internal Server Error'});

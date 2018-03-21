@@ -181,28 +181,6 @@ router.post('/:id/dishes', jwtAuth, jsonParser, (req, res) => {
     })
 })
 
-
-//DELETE a dish in a restaurant
-// router.delete('/:id/dishes/:dishId', jwtAuth, jsonParser, (req, res) => {
-//     let deletedDish;
-//     Dish.findByIdAndRemove(req.params.dishId)
-//     .then(dish => {
-//       if(dish) {
-//         console.log(dish);
-//         deletedDish = dish;
-//         Restaurant.findByIdAndUpdate({_id: req.params.id},{ $pull: {dishes: req.params.dishId} })
-//         .then(restaurant => res.status(200).json(deletedDish.serialize()))
-         
-//       } else {
-//          return res.send("No dish found");
-//       }      
-//     })
-//     .catch(err => {
-//       console.error(err);
-//       res.status(500).json({ error: 'Internal Server Error' });
-//     })
-//   })
-
 router.delete('/:id/dishes/:dishId', jwtAuth, jsonParser, (req, res) => {
     let deletedDish;
     Dish.findByIdAndRemove(req.params.dishId) //remove the dish
@@ -246,9 +224,7 @@ router.put('/:id/dishes/:dishId', jwtAuth, jsonParser, (req, res) => {
   .then(dish => res.status(200).json(dish.serialize()))
   .catch(err => res.status(500).json({ message: 'Internal server error' }));
 })
-
-module.exports = {router};
-       
+      
 //Add a review for a dish
 router.post('/:id/dishes/:dishId/reviews', jwtAuth, jsonParser, (req, res) => {
     const requiredFields = ['rating', 'description'];
@@ -284,9 +260,11 @@ router.post('/:id/dishes/:dishId/reviews', jwtAuth, jsonParser, (req, res) => {
 //Get all reviews of a dish
 router.get('/:id/dishes/:dishId/reviews', jwtAuth, (req, res) => {
     Dish.findById(req.params.dishId).populate({path: 'reviews'})
-    .then(dish => res.status(200).json(dish.reviews))
+    .then(dish => res.status(200).json(dish.reviews.map(review => review.serialize())))
     .catch(err => {
         console.error(err);
         res.status(500).json({error: 'Internal Server Error'});
   });
 })
+
+module.exports = {router};

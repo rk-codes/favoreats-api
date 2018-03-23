@@ -118,8 +118,23 @@ router.put('/:id', jsonParser, jwtAuth, (req, res) => {
 })
 
 //GET all dishes of a restaurant
+// router.get('/:id/dishes', jwtAuth, (req, res) => {
+//     Restaurant.findById(req.params.id).populate({path: 'dishes'})
+//     .then(restaurant => res.status(200).json(restaurant.dishes.map(dish => dish.serialize())))
+//     .catch(err => {
+//         console.error(err);
+//         res.status(500).json({error: 'Internal Server Error'});
+//   });
+// })
+
 router.get('/:id/dishes', jwtAuth, (req, res) => {
-    Restaurant.findById(req.params.id).populate({path: 'dishes'})
+    let newDishes;
+    Restaurant.findById(req.params.id).populate({
+        path: 'dishes',
+        populate: {
+            path: 'reviews'
+        }}
+    )
     .then(restaurant => res.status(200).json(restaurant.dishes.map(dish => dish.serialize())))
     .catch(err => {
         console.error(err);
@@ -174,7 +189,11 @@ router.post('/:id/dishes', jwtAuth, jsonParser, (req, res) => {
         return Restaurant.findByIdAndUpdate(req.params.id,{ 
             $push: {"dishes": dish} })
     })
-    .then(restaurant => res.json(addedDish.serialize()))
+   // .then(restaurant => res.json(addedDish.serialize()))
+   .then(restaurant => 
+       Dish.findById(addedDish._id).populate({path: "reviews"})
+   )
+   .then(dish => res.json(dish.serialize()))
     .catch(err => {
         console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -250,7 +269,7 @@ router.post('/:id/dishes/:dishId/reviews', jwtAuth, jsonParser, (req, res) => {
         console.log(addedReview)
         return Dish.findByIdAndUpdate(req.params.dishId, { $push: {"reviews": review} })
     })    
-    .then(dish => res.json(addedReview.serialize()))
+    .then(dish => res.json(addedReview))
     .catch(err => {
         console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -260,7 +279,7 @@ router.post('/:id/dishes/:dishId/reviews', jwtAuth, jsonParser, (req, res) => {
 //Get all reviews of a dish
 router.get('/:id/dishes/:dishId/reviews', jwtAuth, (req, res) => {
     Dish.findById(req.params.dishId).populate({path: 'reviews'})
-    .then(dish => res.status(200).json(dish.reviews.map(review => review.serialize())))
+    .then(dish => res.status(200).json(dish.reviews.map(review => review)))
     .catch(err => {
         console.error(err);
         res.status(500).json({error: 'Internal Server Error'});

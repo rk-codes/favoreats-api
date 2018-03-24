@@ -159,7 +159,7 @@ router.get('/:id/dishes/:dishId', jwtAuth, (req, res) => {
   });
 })
 
-//POST a dish to a restaurant
+
 router.post('/:id/dishes', jwtAuth, jsonParser, (req, res) => {
     const requiredFields = ['name', 'rating', 'description'];
     for (let i = 0; i < requiredFields.length; i++) {
@@ -182,6 +182,7 @@ router.post('/:id/dishes', jwtAuth, jsonParser, (req, res) => {
       .then(review => Dish.create({
         restaurant: mongoose.Types.ObjectId(req.params.id),
         name: req.body.name,
+        latestRating: req.body.rating,
         reviews: [review._id]
     }))
     .then(dish => {
@@ -199,7 +200,6 @@ router.post('/:id/dishes', jwtAuth, jsonParser, (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     })
 })
-
 router.delete('/:id/dishes/:dishId', jwtAuth, jsonParser, (req, res) => {
     let deletedDish;
     Dish.findByIdAndRemove(req.params.dishId) //remove the dish
@@ -245,6 +245,7 @@ router.put('/:id/dishes/:dishId', jwtAuth, jsonParser, (req, res) => {
 })
       
 //Add a review for a dish
+
 router.post('/:id/dishes/:dishId/reviews', jwtAuth, jsonParser, (req, res) => {
     const requiredFields = ['rating', 'description'];
     for (let i = 0; i < requiredFields.length; i++) {
@@ -266,9 +267,11 @@ router.post('/:id/dishes/:dishId/reviews', jwtAuth, jsonParser, (req, res) => {
     Review.create(newReview)
     .then(review => {
         addedReview = review;
-        console.log(addedReview)
-        return Dish.findByIdAndUpdate(req.params.dishId, { $push: {"reviews": review} })
-    })    
+       return  Dish.findByIdAndUpdate(req.params.dishId, { 
+           $push: {"reviews": review}, 
+           latestRating: req.body.rating })     
+    }) 
+ 
     .then(dish => res.json(addedReview))
     .catch(err => {
         console.error(err);
@@ -287,3 +290,4 @@ router.get('/:id/dishes/:dishId/reviews', jwtAuth, (req, res) => {
 })
 
 module.exports = {router};
+

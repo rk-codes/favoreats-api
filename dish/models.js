@@ -9,6 +9,10 @@ const DishSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    latestRating: {
+        type: Number,
+        default: 0
+    },
     reviews : [{ 
         type: mongoose.Schema.Types.ObjectId , 
         ref: "Review"
@@ -20,6 +24,7 @@ DishSchema.methods.serialize = function() {
         restaurant: this.restaurant|| '',
         id: this._id || '',
         name: this.name || '',
+        latestRating: this.latestRating || 0,
         reviews: this.reviews.map(review => review) || []
     }
 }

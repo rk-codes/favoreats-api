@@ -272,7 +272,7 @@ router.post('/:id/dishes/:dishId/reviews', jwtAuth, jsonParser, (req, res) => {
            latestRating: req.body.rating })     
     }) 
  
-    .then(dish => res.json(addedReview))
+    .then(dish => res.json(addedReview.serialize()))
     .catch(err => {
         console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });

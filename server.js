@@ -15,9 +15,7 @@ mongoose.Promise = global.Promise;
 const app = express();
 
 app.use(
-    cors({
-        origin: CLIENT_ORIGIN
-    })
+    cors()
 );
 
 passport.use(localStrategy);
